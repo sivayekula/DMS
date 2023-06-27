@@ -5,7 +5,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Companies</title>
+        <title>Categories</title>
         <link href="/vendor/fontawesome/css/fontawesome.min.css" rel="stylesheet">
         <link href="/vendor/fontawesome/css/solid.min.css" rel="stylesheet">
         <link href="/vendor/fontawesome/css/brands.min.css" rel="stylesheet">
@@ -20,19 +20,19 @@
         <script src="/js/script.js"></script>
         <script>
             $(document).ready(function(){
-                getCompanies()
+                getCategories()
             })
-            async function getCompanies() {
-                try {
-                    let cpyResp = await fetch("getCompanies");
-                    let company = await cpyResp.json();
-                    let cpyObj= company.data;
-                    let cpy;
-                    for(let i= 0; i< cpyObj.length; i++) {
-                        cpy += "<tr><td>"+cpyObj[i].name+"</td><td>"+cpyObj[i].domain+"</td><td>"+cpyObj[i].status+"</td><td class='text-end'> <a href='#' class='btn btn-outline-info btn-rounded'><i class='fas fa-pen'></i></a><a href='#' class='btn btn-outline-danger btn-rounded'><i class='fas fa-trash'></i></a></td></tr>"
+            async function getCategories() {
+                try{
+                    let catRes= await fetch("getCategories");
+                    let cat = await catRes.json();
+                    let catObj= cat.data
+                    let category;
+                    for(let i= 0; i< catObj.length; i++) {
+                        category += '<tr><td>'+catObj[i].name+'</td><td>'+catObj[i].description+'</td><td>'+catObj[i].status+'</td><td class="text-end"> <a href="#" class="btn btn-outline-info btn-rounded"><i class="fas fa-pen"></i></a><a href="#" class="btn btn-outline-danger btn-rounded"><i class="fas fa-trash"></i></a></td></tr>'
                     }
-                    cpy ? $("tbody").empty().append(cpy) : "";
-                }catch(err) {
+                    category ? $("tbody").empty().append(category) : ""
+                }catch(err){
                     console.log(err)
                 }
             }
@@ -49,8 +49,8 @@
                 <div class="content">
                     <div class="container">
                         <div class="page-title">
-                            <h3>Companies
-                                <a href="#" class="btn btn-sm btn-outline-primary float-end" data-bs-toggle="modal" data-bs-target="#exampleModal" >Create Company</a>
+                            <h3>Categories 
+                                <a href="#" class="btn btn-sm btn-outline-primary float-end" data-bs-toggle="modal" data-bs-target="#exampleModal" >Create Category</a>
                             </h3>
                         </div>
                         <div class="box box-primary">
@@ -58,13 +58,13 @@
                                 <table class="table table-striped" id="dataTables-example" width="100%">
                                     <thead>
                                         <tr>
-                                            <th>Company Name</th>
-                                            <th>Domain</th>
+                                            <th>Category Name</th>
+                                            <th>Description</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody> 
+                                    <tbody>
                                     </tbody>
                                 </table>
                             </div>
@@ -77,19 +77,19 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Create Company</h5>
+                        <h5 class="modal-title">Create Category</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form class="needs-validation" novalidate accept-charset="utf-8" action="createCompany">
+                    <form class="needs-validation" novalidate accept-charset="utf-8" action="createCategory">
                         <div class="modal-body text-start">
                             <div class="mb-3">
-                                <label for="company" class="form-label">Company Name</label>
-                                <input type="text" name="name" placeholder="Company Name" class="form-control" minlength="3" required>
-                                <div class="invalid-feedback">Please enter company name.</div>
+                                <label for="Category" class="form-label">Category Name</label>
+                                <input type="text" name="name" placeholder="Category Name" class="form-control" minlength="3" required>
+                                <div class="invalid-feedback">Please enter category name.</div>
                             </div>
                             <div class="mb-3">
-                                <label for="domain" class="form-label">Domain</label>
-                                <input type="text" name="domain" placeholder="Domain Name" class="form-control">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="description" rows="4"></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">

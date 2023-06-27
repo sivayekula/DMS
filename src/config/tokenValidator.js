@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('./config');
 
+
 const sessionChecker = (req, res, next) => {    
     // console.log(`Session Checker: ${req.session.token}`);
     if (req.session.token) {
@@ -17,4 +18,7 @@ const sessionChecker = (req, res, next) => {
     }
 };
 
-module.exports = sessionChecker
+
+module.exports = {
+    sessionChecker: sessionChecker
+}

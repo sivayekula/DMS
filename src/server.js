@@ -13,8 +13,8 @@ const Company = require("./schemas/companies");
 const Roles= require("./schemas/roles")
 const jwt = require('jsonwebtoken');
 
-app.use(bodyParser.urlencoded({extended: false}))
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true, limit: '5mb'}))
+app.use(bodyParser.json({limit: '5mb'}));
 
 app.use(cors());
 app.use(cookieParser());
@@ -25,19 +25,19 @@ app.use(session({
     resave: false,
     cookie: { 
         secure: false, // This will only work if you have https enabled!
-        maxAge: 60000*30 // 1 min
+        maxAge: 60000*120 // 2 hours
     } 
 }));
 app.use(function(req, res, next) {
     if(req.session.token){
         let userObj = jwt.decode(req.session.token);
-        console.log("inside session", userObj.name)
-        res.locals.name= userObj.name
+        res.locals.user= JSON.stringify(userObj)
     }
     next();
 });
 app.set('view engine', 'ejs');
 app.use(express.static("assets"))
+app.use(express.static('uploads'))
 
 app.use("/", router)
 

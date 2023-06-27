@@ -5,7 +5,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Companies</title>
+        <title>Roles</title>
         <link href="/vendor/fontawesome/css/fontawesome.min.css" rel="stylesheet">
         <link href="/vendor/fontawesome/css/solid.min.css" rel="stylesheet">
         <link href="/vendor/fontawesome/css/brands.min.css" rel="stylesheet">
@@ -20,18 +20,18 @@
         <script src="/js/script.js"></script>
         <script>
             $(document).ready(function(){
-                getCompanies()
+                getRoles()
             })
-            async function getCompanies() {
-                try {
-                    let cpyResp = await fetch("getCompanies");
-                    let company = await cpyResp.json();
-                    let cpyObj= company.data;
-                    let cpy;
-                    for(let i= 0; i< cpyObj.length; i++) {
-                        cpy += "<tr><td>"+cpyObj[i].name+"</td><td>"+cpyObj[i].domain+"</td><td>"+cpyObj[i].status+"</td><td class='text-end'> <a href='#' class='btn btn-outline-info btn-rounded'><i class='fas fa-pen'></i></a><a href='#' class='btn btn-outline-danger btn-rounded'><i class='fas fa-trash'></i></a></td></tr>"
+            async function getRoles() {
+                try{
+                    let roleResp = await fetch("getRoles");
+                    let role = await roleResp.json();
+                    let roleObj= role.data
+                    let roles;
+                    for(let i= 0; i< roleObj.length; i++) {
+                        roles += "<tr><td>"+roleObj[i].name+"</td><td>"+roleObj[i].status+"</td><td class='text-end'> <a href='#' class='btn btn-outline-info btn-rounded'><i class='fas fa-pen'></i></a><a href='#' class='btn btn-outline-danger btn-rounded'><i class='fas fa-trash'></i></a></td></tr>"
                     }
-                    cpy ? $("tbody").empty().append(cpy) : "";
+                    roles ? $("tbody").empty().append(roles) : "";
                 }catch(err) {
                     console.log(err)
                 }
@@ -49,8 +49,8 @@
                 <div class="content">
                     <div class="container">
                         <div class="page-title">
-                            <h3>Companies
-                                <a href="#" class="btn btn-sm btn-outline-primary float-end" data-bs-toggle="modal" data-bs-target="#exampleModal" >Create Company</a>
+                            <h3>Roles
+                                <a href="#" class="btn btn-sm btn-outline-primary float-end" data-bs-toggle="modal" data-bs-target="#exampleModal" >Create Role</a>
                             </h3>
                         </div>
                         <div class="box box-primary">
@@ -58,13 +58,12 @@
                                 <table class="table table-striped" id="dataTables-example" width="100%">
                                     <thead>
                                         <tr>
-                                            <th>Company Name</th>
-                                            <th>Domain</th>
+                                            <th>Role</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody> 
+                                    <tbody>
                                     </tbody>
                                 </table>
                             </div>
@@ -77,19 +76,15 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Create Company</h5>
+                        <h5 class="modal-title">Create Role</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form class="needs-validation" novalidate accept-charset="utf-8" action="createCompany">
+                    <form class="needs-validation" novalidate accept-charset="utf-8" action="createRole">
                         <div class="modal-body text-start">
                             <div class="mb-3">
-                                <label for="company" class="form-label">Company Name</label>
-                                <input type="text" name="name" placeholder="Company Name" class="form-control" minlength="3" required>
-                                <div class="invalid-feedback">Please enter company name.</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="domain" class="form-label">Domain</label>
-                                <input type="text" name="domain" placeholder="Domain Name" class="form-control">
+                                <label for="role" class="form-label">Role Name</label>
+                                <input type="text" name="name" placeholder="Role Name" class="form-control" minlength="3" required>
+                                <div class="invalid-feedback">Please enter role.</div>
                             </div>
                         </div>
                         <div class="modal-footer">

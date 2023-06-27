@@ -1,5 +1,5 @@
 // Starter JavaScript for disabling form submissions if there are invalid fields
-(function () {
+$(document).ready(function () {
   'use strict'
 
   // Fetch all the forms we want to apply custom Bootstrap validation styles to
@@ -9,12 +9,27 @@
   Array.prototype.slice.call(forms)
     .forEach(function (form) {
       form.addEventListener('submit', function (event) {
+        event.preventDefault()
         if (!form.checkValidity()) {
-          event.preventDefault()
           event.stopPropagation()
+        } else {
+          $.ajax({
+            url: form.action, 
+            type: "POST",             
+            data: $('form').serialize(),
+            dataType : 'json',    
+            success: function(data) {
+              '<div class="alert alert-success" role="alert">'+data.message+'</div>';
+              $('#exampleModal').modal('hide');
+            },
+            eror: function(err) {
+              '<div class="alert alert-danger" role="alert">'+err.message +'</div>'
+            } 
+          })
+          return false;
         }
 
         form.classList.add('was-validated')
       }, false)
     })
-})()
+})

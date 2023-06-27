@@ -125,6 +125,10 @@ body {
     color: #fff;
 }
 
+.valid-feedback.feedback-icon {
+    display: none !important;
+}
+
 /*------------------------------------------------------------------
 [4. Content / #content]
 */

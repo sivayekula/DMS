@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Documents</title>
+        <link href="/vendor/fontawesome/css/fontawesome.min.css" rel="stylesheet">
+        <link href="/vendor/fontawesome/css/solid.min.css" rel="stylesheet">
+        <link href="/vendor/fontawesome/css/brands.min.css" rel="stylesheet">
+        <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/vendor/datatables/datatables.min.css" rel="stylesheet">
+        <link href="/css/master.css" rel="stylesheet">
+        <script src="/vendor/jquery/jquery.min.js"></script>
+        <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="/vendor/datatables/datatables.min.js"></script>
+        <script src="/js/initiate-datatables.js"></script>
+        <script src="/js/script.js"></script>
+        <script>
+            $(document).ready(function () {
+                'use strict'
+                getDocuments()
+                let forms = document.querySelectorAll('.needs-validation')
+                Array.prototype.slice.call(forms).forEach(function (form) {
+                    form.addEventListener('submit', async function (event) {
+                        event.preventDefault()
+                        if (!form.checkValidity()) {
+                            event.stopPropagation()
+                        } else {
+                            try{
+                                let file = document.querySelector('input[type="file"]')
+                                let data = new FormData()
+                                data.append('file', file.files[0])
+                                data.append('docName', $('#docName').val())
+                                data.append('category', $('#category').val())
+                                data.append('reviewer', $('#reviewer').val())
+                                let resp= await fetch(form.action, {
+                                    method: 'POST',
+                                    body: data
+                                })
+                                console.log(await resp.json())
+                            }catch(err){
+                                console.log(err)
+                            }
+                            return false;
+                        }
+                    form.classList.add('was-validated')
+                }, false)
+                })
+            })
+            async function getReqData() {
+                getusers()
+                getCategories()
+            }
+
+            async function getusers() {
+                try{
+                    let userResp = await fetch("getUsers");
+                    let userObj = await userResp.json();
+                    let user= '<option value="" selected>Choose...</option>'
+                    for(let i= 0; i< userObj.data.length; i++) {
+                        user += '<option value="'+userObj.data[i]._id+'">'+userObj.data[i].name+'</option>'
+                    }
+                    user ? $("#reviewer").empty().append(user) : "";
+                }catch(err){
+                    console.log(err)
+                }
+            }
+
+            async function getCategories() {
+                try{
+                    let catRes= await fetch("getCategories");
+                    let cat = await catRes.json();
+                    let catObj= cat.data
+                    let category= '<option value="" selected>Choose...</option>'
+                    for(let i= 0; i< catObj.length; i++) {
+                        category += '<option value="'+catObj[i]._id+'">'+catObj[i].name+'</option>'
+                    }
+                    $("#category").empty().append(category)
+                }catch(err){
+                    console.log(err)
+                }
+            }
+
+            async function getDocuments() {
+                try{
+                    let docRes= await fetch("getdocuments");
+                    let doc = await docRes.json();
+                    let docObj= doc.data
+                    let docu;
+                    for(let i= 0; i< docObj.length; i++) {
+                        docu += '<tr><td>'+docObj[i].docname+'</td><td>'+docObj[i].category.name+'</td><td>'+new Date(docObj[i].initiatedAt).toLocaleString()+'</td><td>'+docObj[i].status+'</td><td class="text-end"> <a href="viewDocument/'+docObj[i]._id+'" class="btn btn-outline-info btn-rounded"><i class="fas fa-eye"></i></a><a href="#" class="btn btn-outline-danger btn-rounded"><i class="fas fa-trash"></i></a></td></tr>'
+                    }
+                    docu ? $("tbody").empty().append(docu) : "";
+                }catch(err){
+                    console.log(err)
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+        <div class="wrapper">
+            <!-- // sidebar -->
+            <%- include('./sidebar.ejs'); %>
+            <div id="body" class="active">
+                <!-- header -->
+                <%- include('./header.ejs'); %>
+                <div class="content">
+                    <div class="container">
+                        <div class="page-title">
+                            <h3>Documents
+                                <a href="#" class="btn btn-sm btn-outline-primary float-end" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="getReqData()">Initiate Document</a>
+                            </h3>
+                        </div>
+                        <div class="box box-primary">
+                            <div class="box-body">
+                                <table class="table table-striped" id="dataTables-example" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Document Name</th>
+                                            <th>Category</th>
+                                            <th>InitiatedAt</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="exampleModal" role="dialog" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Signin Modal</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form class="needs-validation" novalidate accept-charset="utf-8" action="createDocument" enctype="multipart/form-data">
+                        <div class="modal-body text-start">
+                        <!-- <p>Lorem ipsum dolor sit amet consectetur.</p> -->
+                            <div class="mb-3">
+                                <label for="document" class="form-label">Document Name</label>
+                                <input type="text" name="docName" id="docName" placeholder="Document Name" class="form-control" required>
+                                <div class="invalid-feedback">Please provide document name.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category</label>
+                                <select name="category" id="category" class="form-select" required>
+                                </select>
+                                <div class="invalid-feedback">Please select a State.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reviewer" class="form-label">Reviewer</label>
+                                <select name="reviewer" id="reviewer" class="form-select" required>
+                                </select>
+                                <div class="invalid-feedback">Please select a State.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Document</label>
+                                <input class="form-control" name="site_logo" type="file" id="formFile1" required>
+                                <div class="invalid-feedback">Please upload document.</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
