@@ -9,14 +9,18 @@ const saveDocument= async (docObj)=> {
     }
 }
 
-const documentList= async (id)=> {
+const documentList= async (qry)=> {
     try{
-        let resp;
-        if(id){
-            resp= await Document.findOne({_id: id}).populate("category");
-        }else {
-            resp= await Document.find().populate("category");
-        }
+        let resp= await Document.find(qry).populate("category");
+        return resp
+    }catch(err) {
+        throw err
+    }
+}
+
+const getDocument= async(qry)=> {
+    try{
+        let resp= await Document.findOne(qry).populate("category");
         return resp
     }catch(err) {
         throw err
@@ -25,5 +29,6 @@ const documentList= async (id)=> {
 
 module.exports= {
     saveDocument: saveDocument,
-    documentList: documentList
+    documentList: documentList,
+    getDocument: getDocument
 }

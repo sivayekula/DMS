@@ -20,6 +20,11 @@ const DocumentSchema = new mongoose.Schema({
     required: true,
     ref: "category"
   },
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "company"
+  },
   initiater: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -59,7 +64,7 @@ const DocumentSchema = new mongoose.Schema({
   action: {
     type: String,
     required: true,
-    enum: ["initiate", "correction", "reinitiated", "approved", "requested", "accepted"],
+    enum: ["initiate", "correction", "reviewed", "reinitiated", "approved", "requested", "accepted"],
     default: "initiate"
   }
 },{

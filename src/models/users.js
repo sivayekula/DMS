@@ -10,9 +10,9 @@ const loginService = async (body)=> {
     }
 }
 
-const usersList= async (id)=> {
+const usersList= async (flter)=> {
     try{
-        let qry= id ? {id: id} : {};
+        let qry= flter ? flter : {};
         let users= await User.find(qry).populate("companyId").populate("roleId");
         return users;
     }catch(err){

@@ -7,7 +7,7 @@ const {sessionChecker} = require("./config/tokenValidator");
 const { createCategory, getCategories } = require("./controllers/category");
 const { createRole, getRoles } = require("./controllers/roles");
 const { createUser, getUsers } = require("./controllers/users");
-const { createDocument, getDocuments, viewDocument } = require("./controllers/document")
+const { createDocument, getDocuments, viewDocument, updateDocument } = require("./controllers/document")
 const multer  = require('multer')
 const path = require('path')
 
@@ -15,6 +15,7 @@ const storage = multer.diskStorage(
     {
         destination: './uploads/',
         filename: function ( req, file, cb ) {
+            console.log(file)
             cb( null, Date.now()+""+ path.extname(file.originalname));
         }
     }
@@ -51,6 +52,7 @@ router.get("/documents", sessionChecker, (req, res)=> {
 router.get("/getdocuments", sessionChecker, getDocuments)
 router.post("/createDocument", sessionChecker, upload.single('file'), createDocument)
 router.get("/viewDocument/:docId", sessionChecker, viewDocument)
+router.post("/updateDocument", sessionChecker, upload.single('file'), updateDocument)
 
 router.get("/roles", sessionChecker, (req, res)=> {
     res.render("roles")
@@ -67,7 +69,7 @@ router.post("/createCategory", sessionChecker, createCategory)
 
 router.get("/logout", (req, res) => {
     req.session.destroy();
-    res.send("Your are logged out ");
+    res.status(200).json({status: "success"})
 });
  
 

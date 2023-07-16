@@ -10,10 +10,9 @@ const saveRole= async (roleObj)=> {
     }
 }
 
-const getRoles= async(id)=> {
+const getRoles= async()=> {
     try{
-        let qry= id ? {id: id} : {}
-        let roles= await Role.find(qry);
+        let roles= await Role.find({name:{$ne: "superAdmin"}});
         return roles
     }catch(err) {
         throw err

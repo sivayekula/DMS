@@ -8,7 +8,7 @@ const login = async (req, res)=> {
         let user = await loginService(req.body)
         let passRes= await bcrypt.compare(req.body.password, user.password)
         if(user && passRes) {
-            let token = getToken({_id: user._id, name: user.name, role: user.roleId.name})
+            let token = getToken({_id: user._id, name: user.name, roleId: user.roleId._id, role: user.roleId.name, companyId: user.companyId._id})
             req.session.token = token
             req.session.save()
             res.status(200).json({status: 200, message: "User logged successfully", data: token})
@@ -22,7 +22,8 @@ const login = async (req, res)=> {
 
 const getUsers= async (req, res)=> {
     try{
-        let users= await usersList()
+        let flter= req.user.role == "superAdmin" ? {} : {companyId: req.user.companyId}
+        let users= await usersList(flter)
         res.status(200).json({status: 200, message: "Users list", data: users})
     }catch(err){
         res.status(400).json({status: 400, message: err.message ? err.message : "Sorry! we are unable to get users"})

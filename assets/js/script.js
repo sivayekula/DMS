@@ -22,3 +22,7 @@ $(document).ready(function() {
     // });
 });
 
+async function clearSession() {
+    let catRes= await fetch("logout");
+}
+

@@ -17,182 +17,66 @@
         <script src="/vendor/datatables/datatables.min.js"></script>
         <script src="/js/initiate-datatables.js"></script>
         <script src="/js/script.js"></script>
-        <script src="https://unpkg.com/konva@9.2.0/konva.min.js"></script>
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.quilljs.com/1.3.6/quill.snow.css"
-    />
-
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-        <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/pdf2html@3.1.0/index.min.js"></script>
+        <script type="text/javascript" src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
+        <script src="/js/docx-preview.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.min.js"></script>
         <script>
-            $(document).ready( async function(){
-                // If absolute URL from the remote server is provided, configure the CORS
-// header on that server.
-var url = 'http://localhost:8080/<%=data.name %>';
-const html = await pdf2html.html('http://localhost:8080/<%=data.name %>');
-console.log(html);
-var pdfjsLib = window['pdfjs-dist/build/pdf'];
+          $(document).ready( async function(){
+            let url= `http://localhost:8080/<%= data.name %>`;
+            await PreviewWordDoc(url)
+            document.getElementById('edit').addEventListener('click', editPage);
+            document.getElementById('save').addEventListener('click', savePage);
+          })
+            function editPage() {
+              $('#word-container').attr('contenteditable', 'true');
+            }
 
-// The workerSrc property shall be specified.
-pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+            async function savePage(filename="") {
+              try{;
+                await convertImagesToBase64()
+                let resp= await fetch("/updateDocument", {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({htmltxt: document.getElementById("word-container").innerHTML, name: "<%= data.name%>", id: "<%= data._id %>"})
+                })
+              }catch(err){
+                console.log(err)
+              }
+            }
+            async function convertImagesToBase64 () {
+              contentDocument = await document.querySelector("#word-container");
+              var regularImages = contentDocument.querySelectorAll("img");
+              var canvas = document.createElement('canvas');
+              var ctx = canvas.getContext('2d');
+              [].forEach.call(regularImages, function (imgElement) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(imgElement, 0, 0, imgElement.width, imgElement.height);
+                var dataURL = canvas.toDataURL();
+                imgElement.setAttribute('src', dataURL);
+              })
+              canvas.remove();
+              return;
+            }
+            async function PreviewWordDoc(url) {
+              let docRes = await fetch(url)
+              let doc= await docRes.blob()
+              let file = new File([doc], "<%= data.original_name %>");
+              let docxOptions = Object.assign(docx.defaultOptions, {
+                useMathMLPolyfill: true,
+                breakPages: true,
+                ignoreLastRenderedPageBreak: true,
+                inWrapper: true, 
+                ignoreWidth:  false, 
+                ignoreHeight: false,
+                trimXmlDeclaration: false,
+                experimental: true,
+                renderChanges:true
+              });
+              let container = document.querySelector("#word-container");
+              let resp= docx.renderAsync(file, container, null, docxOptions);
+              return "true";  
+            };
 
-var pdfDoc = null,
-    pageNum = 1,
-    pageRendering = false,
-    pageNumPending = null,
-    scale = 0.8,
-    canvas = document.getElementById('the-canvas'),
-    ctx = canvas.getContext('2d');
-
-/**
- * Get page info from document, resize canvas accordingly, and render page.
- * @param num Page number.
- */
-function renderPage(num) {
-  pageRendering = true;
-  // Using promise to fetch the page
-  pdfDoc.getPage(num).then(function(page) {
-    var viewport = page.getViewport({scale: scale});
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
-
-    // Render PDF page into canvas context
-    var renderContext = {
-      canvasContext: ctx,
-      viewport: viewport
-    };
-    var renderTask = page.render(renderContext);
-
-    // Wait for rendering to finish
-    renderTask.promise.then(function() {
-      pageRendering = false;
-      if (pageNumPending !== null) {
-        // New page rendering is pending
-        renderPage(pageNumPending);
-        pageNumPending = null;
-      }
-    });
-  });
-
-  // Update page counters
-  document.getElementById('page_num').textContent = num;
-}
-
-
-/**
- * If another page rendering in progress, waits until the rendering is
- * finised. Otherwise, executes rendering immediately.
- */
-function queueRenderPage(num) {
-  if (pageRendering) {
-    pageNumPending = num;
-  } else {
-    renderPage(num);
-  }
-}
-
-/**
- * Displays previous page.
- */
-function onPrevPage() {
-  if (pageNum <= 1) {
-    return;
-  }
-  pageNum--;
-  queueRenderPage(pageNum);
-}
-document.getElementById('prev').addEventListener('click', onPrevPage);
-
-/**
- * Displays next page.
- */
-function onNextPage() {
-  if (pageNum >= pdfDoc.numPages) {
-    return;
-  }
-  pageNum++;
-  queueRenderPage(pageNum);
-}
-document.getElementById('next').addEventListener('click', onNextPage);
-
-/**
- * Asynchronously downloads PDF.
- */
-pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
-  pdfDoc = pdfDoc_;
-  document.getElementById('page_count').textContent = pdfDoc.numPages;
-
-  // Initial/first page rendering
-  renderPage(pageNum);
-});
-
-var quill = new Quill('#editor-container', {
-        modules: {
-          toolbar: [
-            [{ header: [1, 2, false] }],
-            ['bold', 'italic', 'underline'],
-            ['image', 'code-block'],
-          ],
-        },
-        placeholder: 'Compose an epic...',
-        theme: 'snow', // or 'bubble'
-      });
-
-      var width = window.innerWidth;
-      var height = window.innerHeight;
-
-      var stage = new Konva.Stage({
-        container: 'container',
-        width: width,
-        height: height,
-      });
-
-      const layer = new Konva.Layer();
-      stage.add(layer);
-
-      const shape = new Konva.Image({
-        x: 10,
-        y: 10,
-        draggable: true,
-        stroke: 'red',
-        scaleX: 1 / window.devicePixelRatio,
-        scaleY: 1 / window.devicePixelRatio,
-      });
-      layer.add(shape);
-
-      function renderText() {
-        // convert DOM into image
-        html2canvas(document.querySelector('.ql-editor'), {
-          backgroundColor: 'rgba(0,0,0,0)',
-        }).then((canva) => {
-            // renderPage(1)
-            console.log(canva, "***************")
-          // show it inside Konva.Image
-          shape.image(canva);
-        });
-      }
-
-      // batch updates, so we don't render text too frequently
-      var timeout = null;
-      function requestTextUpdate() {
-        if (timeout) {
-          return;
-        }
-        timeout = setTimeout(function () {
-          timeout = null;
-          renderText();
-        }, 500);
-      }
-
-      // render text on all changes
-      quill.on('text-change', requestTextUpdate);
-      console.log("fsdfsdfsd")
-      // make initial rendering
-      renderText();
-            })
         </script>
     </head>
 
@@ -207,23 +91,25 @@ var quill = new Quill('#editor-container', {
                     <div class="container">
                         <div class="page-title">
                             <h3>Documents
-                                <a href="#" class="btn btn-sm btn-outline-primary float-end" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="getReqData()">Initiate Document</a>
+                                <!-- <a href="#" class="btn btn-sm btn-outline-primary float-end" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="getReqData()">Initiate Document</a> -->
                             </h3>
                         </div>
                         <div class="box box-primary">
                             <div class="box-body">
-                                <div>
-                                    <button id="prev">Previous</button>
-                                    <button id="next">Next</button>
-                                    &nbsp; &nbsp;
-                                    <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
-                                  </div>
-                                  <canvas id="the-canvas"></canvas>
-                                <div id="editor-container">
-                                    
-                                  </div>
-                                  Rendered stage:
-                                  <div id="container"></div>
+                              <div id="word-container" class=""></div>
+                              <% let userType= JSON.parse(user) %>
+                              <% if((data.action == "initiate" || data.action == "reviewed") && (userType.role == "reviewer" || userType.role == "approver")) { %>
+                              <button id="edit" class="btn btn-primary">Edit</button>
+                              <button id="save" class="btn btn-primary">Save</button> <%}%>
+                              <button id="btnReset" class="btn btn-primary">Close</button>
+                              <% if(data.action == "initiate" && userType.role == "reviewer") { %>
+                              <button id="btnReview" class="btn btn-primary">Reviewd</button> <% } %>
+                              <% if(data.action == "reviewed" && userType.role == "approver") { %>
+                              <button id="btnApprove" class="btn btn-primary">Approved</button><% } %>
+                              <% if(data.action == "approved") { %>
+                              <button id="btnRequest" class="btn btn-primary">Request</button><% } %>
+                              <% if(data.action == "accepted") { %>
+                                <button id="btnDownload" class="btn btn-primary">Download</button><% } %>
                             </div>
                         </div>
                     </div>
